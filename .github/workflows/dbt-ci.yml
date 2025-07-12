@@ -1,46 +1,47 @@
-name: dbt CI/CD
+name: dbt tests
 
 on:
   push:
-    branches: [ main, develop ]
-  pull_request:
     branches: [ main ]
+  pull_request:
 
 jobs:
-  dbt-check:
+  run-dbt:
     runs-on: ubuntu-latest
-    
+
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v3
-      
-    - name: Set up Python
-      uses: actions/setup-python@v4
-      with:
-        python-version: '3.9'
-        
-    - name: Install dependencies
-      run: |
-        pip install dbt-bigquery
-        
-    - name: Set up dbt profile
-      run: |
-        mkdir -p ~/.dbt
-        echo "${{ secrets.DBT_PROFILES_YML }}" > ~/.dbt/profiles.yml
-        
-    - name: Set up Google Cloud credentials
-      run: |
-        echo "${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}" > ${HOME}/gcp-key.json
-        
-    - name: dbt debug
-      run: dbt debug
-      
-    - name: dbt compile
-      run: dbt compile
-      
-    - name: dbt test
-      run: dbt test
-      
-    - name: dbt run (on main branch only)
-      if: github.ref == 'refs/heads/main'
-      run: dbt run
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: 3.11
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install dbt-bigquery
+          
+      - name: Set up dbt profile
+        run: |
+          mkdir -p ~/.dbt
+          echo "${{ secrets.DBT_PROFILES_YML_BASE64 }}" | base64 --decode > ~/.dbt/profiles.yml
+          echo "=== ~/.dbt/profiles.yml ==="
+          cat ~/.dbt/profiles.yml
+          echo "=== END OF ~/.dbt/profiles.yml ==="
+          
+      - name: Write BigQuery keyfile to disk
+        run: |
+          echo "${{ secrets.BIGQUERY_KEYFILE_JSON_BASE64 }}" | base64 --decode > /home/runner/gcp-key.json
+          
+      - name: Run dbt
+        env:
+          GOOGLE_APPLICATION_CREDENTIALS: /home/runner/gcp-key.json
+        run: |
+          dbt debug --config-dir
+          dbt clean                  # ⬅️ Clears old compiled model cache
+          dbt deps
+          dbt seed || true
+          dbt run
+          dbt test

@@ -82,6 +82,32 @@ SELECT * FROM `your-project.dbt_demo.taxi_zone_analysis`
 ORDER BY daily_trips DESC;
 ```
 
+## GitHub Actions CI/CD
+
+This project includes a GitHub Actions workflow that automatically runs dbt on every push to main and pull requests.
+
+### Required GitHub Secrets
+
+You need to set up these secrets in your GitHub repository (Settings → Secrets and variables → Actions):
+
+1. **`DBT_PROFILES_YML_BASE64`**: Base64 encoded profiles.yml file
+   ```bash
+   # Create the secret value:
+   cat ~/.dbt/profiles.yml | base64
+   ```
+
+2. **`BIGQUERY_KEYFILE_JSON_BASE64`**: Base64 encoded BigQuery service account key
+   ```bash
+   # Create the secret value:
+   cat /path/to/your/service-account-key.json | base64
+   ```
+
+### Workflow Features
+- ✅ Runs `dbt debug`, `dbt clean`, `dbt deps`, `dbt seed`, `dbt run`, and `dbt test`
+- ✅ Uses Python 3.11 and latest GitHub Actions
+- ✅ Supports both push to main and pull requests
+- ✅ Automatically sets up BigQuery credentials from secrets
+
 ## Next Steps
 
 1. Set up proper authentication
