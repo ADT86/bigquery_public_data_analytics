@@ -2,6 +2,8 @@
 
 This dbt project analyzes NYC taxi data from BigQuery's public datasets.
 
+✅ **Status: GitHub Actions configured and ready to run!**
+
 ## Project Structure
 
 - **Models**: 

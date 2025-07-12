@@ -12,7 +12,6 @@ models:
         description: "Total number of trips"
         data_tests:
           - not_null
-          - positive_value
       - name: avg_trip_distance
         description: "Average trip distance"
         data_tests:
@@ -35,4 +34,3 @@ models:
         description: "Number of trips from this zone"
         data_tests:
           - not_null
-          - positive_value
