@@ -1,0 +1,13 @@
+bigquery_public_data_analytics:
+  target: dev
+  outputs:
+    dev:
+      type: bigquery
+      method: service-account
+      project: plexiform-brand-408008
+      dataset: dbt_demo
+      threads: 1
+      timeout_seconds: 300
+      location: US
+      priority: interactive
+      keyfile: /home/runner/gcp-key.json

@@ -1,0 +1,55 @@
+name: dbt tests (debug)
+
+on:
+  workflow_dispatch:  # Manual trigger for testing
+  push:
+    branches: [ main ]
+  pull_request:
+
+jobs:
+  run-dbt:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: 3.11
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install dbt-bigquery
+          
+      - name: Debug secrets
+        run: |
+          echo "Checking if secrets exist..."
+          echo "DBT_PROFILES_YML_BASE64 length: ${#DBT_PROFILES_YML_BASE64}"
+          echo "BIGQUERY_KEYFILE_JSON_BASE64 length: ${#BIGQUERY_KEYFILE_JSON_BASE64}"
+        env:
+          DBT_PROFILES_YML_BASE64: ${{ secrets.DBT_PROFILES_YML_BASE64 }}
+          BIGQUERY_KEYFILE_JSON_BASE64: ${{ secrets.BIGQUERY_KEYFILE_JSON_BASE64 }}
+          
+      - name: Set up dbt profile
+        run: |
+          mkdir -p ~/.dbt
+          echo "Setting up profiles.yml..."
+          echo "${{ secrets.DBT_PROFILES_YML_BASE64 }}" | base64 --decode > ~/.dbt/profiles.yml
+          echo "=== ~/.dbt/profiles.yml ==="
+          cat ~/.dbt/profiles.yml
+          echo "=== END OF ~/.dbt/profiles.yml ==="
+          
+      - name: Write BigQuery keyfile to disk
+        run: |
+          echo "Setting up BigQuery keyfile..."
+          echo "${{ secrets.BIGQUERY_KEYFILE_JSON_BASE64 }}" | base64 --decode > /home/runner/gcp-key.json
+          echo "Keyfile created with size: $(wc -c < /home/runner/gcp-key.json) bytes"
+          
+      - name: Run dbt debug only
+        env:
+          GOOGLE_APPLICATION_CREDENTIALS: /home/runner/gcp-key.json
+        run: |
+          dbt debug
