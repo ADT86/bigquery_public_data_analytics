@@ -1,0 +1,38 @@
+
+# dbt specific
+target/
+dbt_packages/
+logs/
+.dbt_backup/
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+
+# Credentials (never commit these!)
+*.json
+*key.json
+*credentials.json
+
+# Environment variables
+.env
+.env.local

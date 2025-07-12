@@ -1,0 +1,38 @@
+version: 2
+
+models:
+  - name: nyc_taxi_summary
+    description: "A summary of NYC taxi trips from BigQuery public dataset"
+    columns:
+      - name: pickup_date
+        description: "Date of taxi pickup"
+        data_tests:
+          - not_null
+      - name: total_trips
+        description: "Total number of trips"
+        data_tests:
+          - not_null
+          - positive_value
+      - name: avg_trip_distance
+        description: "Average trip distance"
+        data_tests:
+          - not_null
+      - name: avg_fare_amount
+        description: "Average fare amount"
+        data_tests:
+          - not_null
+
+  - name: taxi_zone_analysis
+    description: "Analysis of taxi pickups by zone"
+    columns:
+      - name: pickup_location_id
+        description: "Pickup location zone ID"
+        data_tests:
+          - not_null
+      - name: zone_name
+        description: "Name of the pickup zone"
+      - name: daily_trips
+        description: "Number of trips from this zone"
+        data_tests:
+          - not_null
+          - positive_value

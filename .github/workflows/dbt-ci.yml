@@ -1,0 +1,46 @@
+name: dbt CI/CD
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  dbt-check:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+      
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.9'
+        
+    - name: Install dependencies
+      run: |
+        pip install dbt-bigquery
+        
+    - name: Set up dbt profile
+      run: |
+        mkdir -p ~/.dbt
+        echo "${{ secrets.DBT_PROFILES_YML }}" > ~/.dbt/profiles.yml
+        
+    - name: Set up Google Cloud credentials
+      run: |
+        echo "${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}" > ${HOME}/gcp-key.json
+        
+    - name: dbt debug
+      run: dbt debug
+      
+    - name: dbt compile
+      run: dbt compile
+      
+    - name: dbt test
+      run: dbt test
+      
+    - name: dbt run (on main branch only)
+      if: github.ref == 'refs/heads/main'
+      run: dbt run
